@@ -18,10 +18,14 @@ namespace PokerBI
             string inputpath = ConfigurationManager.AppSettings["LogFilePath"];
             string archivepath = ConfigurationManager.AppSettings["LogFileArchivePath"];
             string Outputfile = ConfigurationManager.AppSettings["OutputFile"];
+            string RefreshAll = ConfigurationManager.AppSettings["RefreshAll"];
 
-            using (StreamWriter outputFile = new StreamWriter(Outputfile, false))
+            if (RefreshAll == "Y")
             {
-                outputFile.WriteLine("Game" + "|" + "Date" + "|" + "Player" + "|" + "Action" + "|" + "Cards" + "|" + "Amount" + "|" + "Street", false);
+                using (StreamWriter outputFile = new StreamWriter(Outputfile, false))
+                {
+                    outputFile.WriteLine("Game" + "|" + "Date" + "|" + "Player" + "|" + "Action" + "|" + "Cards" + "|" + "Amount" + "|" + "Street", false);
+                }
             }
 
             string[] fileEntries = Directory.GetFiles(inputpath);
