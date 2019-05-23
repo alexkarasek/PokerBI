@@ -13,7 +13,7 @@ namespace PokerBI
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Game On...");
+            Console.WriteLine("Game On..");
 
             string inputpath = ConfigurationManager.AppSettings["LogFilePath"];
             string archivepath = ConfigurationManager.AppSettings["LogFileArchivePath"];
