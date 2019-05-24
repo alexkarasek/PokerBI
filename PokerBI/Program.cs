@@ -13,7 +13,7 @@ namespace PokerBI
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Game On..");
+            Console.WriteLine("Game On...");
 
             string inputpath = ConfigurationManager.AppSettings["LogFilePath"];
             string archivepath = ConfigurationManager.AppSettings["LogFileArchivePath"];
@@ -36,20 +36,27 @@ namespace PokerBI
                 string inputfile_in = inputpath + @"\" + Path.GetFileName(fileName);
 
                 Console.WriteLine("Processing File: " + inputfile_in);
+
+                string date = "";
+
+                if (site == "wsop")
+                {
+                    date = fileName.Substring(inputpath.Length + 12, 8);
+                }
                 
-                FileParser(ref inputfile_in, ref archivedfile_in, ref site);
+                FileParser(ref inputfile_in, ref archivedfile_in, ref site, ref date);
             }
             Console.WriteLine("Done Processing Files....");
             Console.ReadLine();
 
         }
-        static void FileParser(ref string inputfile, ref string archivedfile, ref string site)
+        static void FileParser(ref string inputfile, ref string archivedfile, ref string site, ref string date)
         {
             try
             {
                 string street = "";
                 string game = "";
-                string date = "";
+                //string date = "";
 
                string line_in;
 
@@ -61,6 +68,7 @@ namespace PokerBI
                         {
                             if (site == "ps")
                             {
+                                date = "";
                                 LineParser(ref line_in, ref street, ref game, ref date, ref site);
                             }
                             else if (site =="wsop")
@@ -246,8 +254,8 @@ namespace PokerBI
             try
             {
                 List<string> patterns = new List<string>();
-                patterns.Add(@"Dealt to\[.\D\s.\D\]");   //Deal
-                patterns.Add(@"^PokerStars\s");  //New Game
+                patterns.Add(@"Dealt to .+\[\s.\D,.+\]");   //Deal
+                patterns.Add(@"WSOP.com");  //New Game
                 patterns.Add(@"\sbets\s");  //Bet
                 patterns.Add(@"\sposts\s\S+\sblind");  //Blind
                 patterns.Add(@"\sfolds\s");   //Fold
@@ -284,18 +292,19 @@ namespace PokerBI
                                     if (line.IndexOf("SHOWS") == -1 && line.IndexOf("shows") == -1 && line.IndexOf(" showed ") == -1 && line.IndexOf(" mucked ") == -1)
                                     {
 
-                                        cards = line.Substring(line.IndexOf("["), 7);
+                                        cards = line.Substring(line.IndexOf("[") + 1, 7);
                                         player = line.Substring(9, line.IndexOf("[") - 10);
                                         street = "PRE-FLOP";
                                     }
                                     break;
 
                                 case 1:  //NEW GAME
-                                    game = line.Substring(27, line.IndexOf(":") - 27);
+                                    //game = line.Substring(27, line.IndexOf(":") - 27);
                                     action = "Info";
-                                    rgxStage = new Regex(@"\d{4}/\d{2}/\d{2}");
+                                    //rgxStage = new Regex(@"\d{4}/\d{2}/\d{2}");
+                                    rgxStage = new Regex(@"\s\d\s");
                                     Stage = rgxStage.Matches(line);
-                                    date = Stage[0].Value;
+                                    //date = Stage[0].Value;
                                     street = "PRE-FLOP";
                                     break;
 
@@ -308,11 +317,12 @@ namespace PokerBI
                                     break;
 
                                 case 3:  //BLIND
-                                    rgxStage = new Regex(@"\s\d+");
+                                    rgxStage = new Regex(@"\$\d+");
                                     Stage = rgxStage.Matches(line);
                                     action = "blind";
                                     amount = Stage[0].Value.Substring(1, Stage[0].Length - 1);
-                                    player = line.Substring(0, line.IndexOf(":"));
+                                    player = line.Substring(0, line.IndexOf(" posts "));
+                                    street = "PRE-FLOP";
                                     break;
 
                                 case 4:   //FOLD
@@ -377,7 +387,7 @@ namespace PokerBI
                             }
                             if (action != "Info")
                             {
-                                //outputFile2.WriteLine(game + "|" + date + "|" + player + "|" + action + "|" + cards + "|" + amount + "|" + street);
+                                outputFile2.WriteLine(game + "|" + date + "|" + player + "|" + action + "|" + cards + "|" + amount + "|" + street);
                                 Console.WriteLine(game + "|" + date + "|" + player + "|" + action + "|" + cards + "|" + amount + "|" + street);
 
                             }
