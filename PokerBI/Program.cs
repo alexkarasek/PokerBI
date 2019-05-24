@@ -38,13 +38,15 @@ namespace PokerBI
                 Console.WriteLine("Processing File: " + inputfile_in);
 
                 string date = "";
-
-                if (site == "wsop")
+                if (fileName.IndexOf("Summary") == -1)
                 {
-                    date = fileName.Substring(inputpath.Length + 12, 8);
+                    if (site == "wsop")
+                    {
+                        date = fileName.Substring(inputpath.Length + 12, 8);
+                    }
+
+                    FileParser(ref inputfile_in, ref archivedfile_in, ref site, ref date);
                 }
-                
-                FileParser(ref inputfile_in, ref archivedfile_in, ref site, ref date);
             }
             Console.WriteLine("Done Processing Files....");
             Console.ReadLine();
@@ -258,13 +260,13 @@ namespace PokerBI
                 patterns.Add(@"WSOP.com");  //New Game
                 patterns.Add(@"\sbets\s");  //Bet
                 patterns.Add(@"\sposts\s\S+\sblind");  //Blind
-                patterns.Add(@"\sfolds\s");   //Fold
+                patterns.Add(@"\sfolds");   //Fold
                 patterns.Add(@"\scalls\s");  //Call
                 patterns.Add(@"\scollected\s[0-9]");  //Win
                 patterns.Add(@"\schecks\s");  //Check
                 patterns.Add(@"\sposts\sthe\sante");  //Ante
                 patterns.Add(@"\*\*\*\s.+\s\*\*\*");  //New Street
-                patterns.Add(@".+\:\sraises+.+[0-9]+\sto\s[0-9]+");  //Raise
+                patterns.Add(@"\sraises\s");  //Raise
 
                 string Outputfile = ConfigurationManager.AppSettings["OutputFile"];
 
@@ -309,11 +311,11 @@ namespace PokerBI
                                     break;
 
                                 case 2:  //BET
-                                    rgxStage = new Regex(@"bets\s\d+");
+                                    rgxStage = new Regex(@"bets\s\[\$\d+");
                                     Stage = rgxStage.Matches(line);
-                                    amount = Stage[0].Value.Substring(5, Stage[0].Length - 5);
+                                    amount = Stage[0].Value.Substring(7, Stage[0].Length - 7);
                                     action = "bet";
-                                    player = line.Substring(0, line.IndexOf(":"));
+                                    player = line.Substring(0, line.IndexOf(" bet"));
                                     break;
 
                                 case 3:  //BLIND
@@ -328,15 +330,15 @@ namespace PokerBI
                                 case 4:   //FOLD
                                     action = "fold";
                                     amount = "0";
-                                    player = line.Substring(0, line.IndexOf(":"));
+                                    player = line.Substring(0, line.IndexOf(" fold"));
                                     break;
 
                                 case 5:  //CALL
-                                    rgxStage = new Regex(@"\s\d+");
+                                    rgxStage = new Regex(@"calls\s\[\$\d+");
                                     Stage = rgxStage.Matches(line);
                                     action = "call";
-                                    amount = Stage[0].Value.Substring(1, Stage[0].Length - 1);
-                                    player = line.Substring(0, line.IndexOf(":"));
+                                    amount = Stage[0].Value.Substring(8, Stage[0].Length - 8);
+                                    player = line.Substring(0, line.IndexOf(" calls"));
                                     break;
 
                                 case 6:  //WIN
@@ -355,7 +357,7 @@ namespace PokerBI
                                 case 7:  //CHECK
                                     action = "check";
                                     amount = "0";
-                                    player = line.Substring(0, line.IndexOf(":"));
+                                    player = line.Substring(0, line.IndexOf(" "));
                                     break;
 
                                 case 8:  //ANTE
@@ -376,11 +378,11 @@ namespace PokerBI
                                     break;
 
                                 case 10:  //RAISE
-                                    rgxStage = new Regex(@"\s\d+\s");
+                                    rgxStage = new Regex(@"raises\s\[\$\d+");
                                     Stage = rgxStage.Matches(line);
                                     action = "raise";
-                                    amount = Stage[0].Value.Substring(1, Stage[0].Length - 2);
-                                    player = line.Substring(0, line.IndexOf(":"));
+                                    amount = Stage[0].Value.Substring(9, Stage[0].Length - 9);
+                                    player = line.Substring(0, line.IndexOf(" "));
                                     break;
 
 
