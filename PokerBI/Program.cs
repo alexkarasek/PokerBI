@@ -35,8 +35,6 @@ namespace PokerBI
                 string archivedfile_in = archivepath + @"\" + Path.GetFileName(fileName);
                 string inputfile_in = inputpath + @"\" + Path.GetFileName(fileName);
 
-                Console.WriteLine("Processing File: " + inputfile_in);
-
                 string date = "";
                 if (fileName.IndexOf("Summary") == -1)
                 {
@@ -44,6 +42,8 @@ namespace PokerBI
                     {
                         date = fileName.Substring(inputpath.Length + 12, 8);
                     }
+
+                    Console.WriteLine("Processing File: " + inputfile_in);
 
                     FileParser(ref inputfile_in, ref archivedfile_in, ref site, ref date);
                 }
@@ -90,7 +90,7 @@ namespace PokerBI
             {
                 // Let the user know what went wrong.
                 Console.WriteLine("The file could not be read:");
-                Console.WriteLine(e.Message);
+                Console.WriteLine(e);
                 Console.ReadLine();
 
             }
@@ -253,6 +253,7 @@ namespace PokerBI
 
         static void LineParser_wsop(ref string line, ref string street, ref string game, ref string date, ref string site)
         {
+            //Console.WriteLine(line);
             try
             {
                 List<string> patterns = new List<string>();
@@ -263,9 +264,9 @@ namespace PokerBI
                 patterns.Add(@"\sfolds");   //Fold
                 patterns.Add(@"\scalls\s");  //Call
                 patterns.Add(@"\scollected\s[0-9]");  //Win
-                patterns.Add(@"\schecks\s");  //Check
+                patterns.Add(@"\schecks");  //Check
                 patterns.Add(@"\sposts\sthe\sante");  //Ante
-                patterns.Add(@"\*\*\*\s.+\s\*\*\*");  //New Street
+                patterns.Add(@"\*\*\sDealing\s.+\*\*");  //New Street
                 patterns.Add(@"\sraises\s");  //Raise
 
                 string Outputfile = ConfigurationManager.AppSettings["OutputFile"];
@@ -295,6 +296,7 @@ namespace PokerBI
                                     {
 
                                         cards = line.Substring(line.IndexOf("[") + 1, 7);
+                                        action = "Info";
                                         player = line.Substring(9, line.IndexOf("[") - 10);
                                         street = "PRE-FLOP";
                                     }
@@ -304,9 +306,10 @@ namespace PokerBI
                                     //game = line.Substring(27, line.IndexOf(":") - 27);
                                     action = "Info";
                                     //rgxStage = new Regex(@"\d{4}/\d{2}/\d{2}");
-                                    rgxStage = new Regex(@"\s\d\s");
+                                    rgxStage = new Regex(@"\s\d+\s");
                                     Stage = rgxStage.Matches(line);
                                     //date = Stage[0].Value;
+                                    game = Stage[0].Value.Substring(1, Stage[0].Length - 2);
                                     street = "PRE-FLOP";
                                     break;
 
@@ -370,8 +373,8 @@ namespace PokerBI
 
                                 case 9:  //NEW STREET
                                     action = "Info";
-                                    street = line.Substring(4, line.IndexOf("***", 4) - 5);
-                                    if (street == "HOLE CARDS")
+                                    street = line.Substring(11, line.IndexOf(" **", 11) - 11).ToUpper();
+                                    if (street == "down cards")
                                     {
                                         street = "PRE-FLOP";
                                     }
@@ -402,9 +405,10 @@ namespace PokerBI
             catch (Exception e)
             {
                 // Let the user know what went wrong.
-                Console.WriteLine("The file could not be read:");
-                Console.WriteLine(e.Message);
-                Console.WriteLine(line);
+               // Console.WriteLine("The file could not be read:");
+                Console.WriteLine(e);
+               // Console.WriteLine(e.Message);
+               // Console.WriteLine(line);
                 Console.ReadLine();
 
             }
