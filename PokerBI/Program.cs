@@ -263,7 +263,7 @@ namespace PokerBI
                 patterns.Add(@"\sposts\s\S+\sblind");  //Blind
                 patterns.Add(@"\sfolds");   //Fold
                 patterns.Add(@"\scalls\s");  //Call
-                patterns.Add(@"\scollected\s[0-9]");  //Win
+                patterns.Add(@"\scollected\s\[");  //Win
                 patterns.Add(@"\schecks");  //Check
                 patterns.Add(@"\sposts\sthe\sante");  //Ante
                 patterns.Add(@"\*\*\sDealing\s.+\*\*");  //New Street
@@ -345,15 +345,16 @@ namespace PokerBI
                                     break;
 
                                 case 6:  //WIN
-                                    rgxStage = new Regex(@"\d+\sfrom\s");
-                                    Stage = rgxStage.Matches(line);
+                                    //rgxStage = new Regex(@"\d+\s[\s");
+                                    //Stage = rgxStage.Matches(line);
                                     action = "win";
-                                    amount = Stage[0].Value.Substring(0, Stage[0].Length - 6);
-                                    rgxStage = new Regex(@".+\scollect");
-                                    if (line.IndexOf(@": ") > 0)
-                                    {
-                                        player = line.Substring(0, line.IndexOf(": collect"));
-                                    }
+                                    //amount = Stage[0].Value.Substring(3, Stage[0].Length - 3);
+                                    amount = line.Substring(line.IndexOf("[ $") + 3, line.Length - line.IndexOf("[ $") - 5);
+                                    //rgxStage = new Regex(@".+\scollect");
+                                    //if (line.IndexOf(@": ") > 0)
+                                    //{
+                                    //    player = line.Substring(0, line.IndexOf(": collect"));
+                                    //}
                                     player = line.Substring(0, line.IndexOf(" collect"));
                                     break;
 
